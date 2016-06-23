@@ -20,7 +20,7 @@ TWEET = u"{title}, by {authors} ({published}) {url}"
 secret_keys = (
     "TWITTER_CONSUMER_KEY", "TWITTER_CONSUMER_SECRET",
     "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_SECRET")
-secrets = dict(zip(keys, [os.getenv(k) for k in secret_keys]))
+secrets = dict(zip(secret_keys, [os.getenv(k) for k in secret_keys]))
 
 credentials_path = "credentials.yaml"
 if os.path.exists(credentials_path):
