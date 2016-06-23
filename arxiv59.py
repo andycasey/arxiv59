@@ -14,7 +14,7 @@ QUERIES = [
     "20:59:57 site:arxiv.org"
 ]
 DATABASE = "arxiv59.db"
-TWEET = "{title}, by {authors} ({published}) {url}"
+TWEET = u"{title}, by {authors} ({published}) {url}"
 
 # Load necessary credentials.
 with open("credentials.yaml", "r") as fp:
@@ -76,7 +76,7 @@ def get_article_details(arxiv_url):
         The URL of the paper.
     """
 
-    identifier = arxiv_url.split("/")[-1]
+    identifier = arxiv_url.split("/")[-1].split("v")[0]
     if "." not in identifier:
         identifier = "astro-ph/{}".format(identifier)
 
@@ -89,7 +89,7 @@ def get_article_details(arxiv_url):
     if N_authors > 1:
         first_author = feed["entry"]["author"][0]["name"]
         if N_authors == 2:
-            suffix = "& {}".format(feed["entry"]["author"][1]["name"])
+            suffix = u"& {}".format(feed["entry"]["author"][1]["name"])
         else:
             suffix = "et al."
 
@@ -104,7 +104,6 @@ def get_article_details(arxiv_url):
     
 
     authors = " ".join([first_author, suffix])
-
 
     return (title, authors, published)
 
@@ -131,12 +130,17 @@ def perform_search():
 
         for url in google.search(query):
 
+            # Clean up the url to remove 'v2' at the end.
+            url = url[:-2] if url[-2] == "v" else url
+            url = url.replace("https://", "http://")
+
             print("Checking for URL {}".format(url))
 
             # Is this in the database? If not, tweet it, then come back tomorrow to
             # check for a new entry.
-            result = cursor.execute(
-                "SELECT * FROM articles WHERE url = ?", (url, )).fetchone()
+            result = cursor.execute("SELECT * FROM articles WHERE url = ?", 
+                (url, )).fetchone()
+
             if result is None:
 
                 # Fetch the article.
@@ -145,7 +149,7 @@ def perform_search():
                 # Tweet it!
                 tweet = format_tweet(title=title, authors=authors, url=url,
                     published=published)
-                print("Updating status: {}".format(tweet))
+                print(u"Updating status: {}".format(tweet))
 
                 try:
                     r = twitter.update_status(tweet)
