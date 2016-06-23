@@ -1,0 +1,5 @@
+google
+requests==2.8.1
+tweepy==3.5.0
+xmltodict==0.10.2
+pyyaml==3.11
