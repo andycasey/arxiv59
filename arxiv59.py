@@ -136,7 +136,7 @@ def perform_search():
         print("Querying: {}".format(query))
 
         for url in google.search(query):
-
+            
             # Clean up the url to remove 'v2' at the end.
             url = url[:-2] if url[-2] == "v" else url
             url = url.replace("https://", "http://")
@@ -149,36 +149,41 @@ def perform_search():
                 (url, )).fetchone()
 
             if result is None:
-
-                # Fetch the article.
-                title, authors, published = get_article_details(url)
-
-                # Tweet it!
-                tweet = format_tweet(title=title, authors=authors, url=url,
-                    published=published)
-                print(u"Updating status: {}".format(tweet))
-
                 try:
-                    r = twitter.update_status(tweet)
+                    # Fetch the article.
+                    title, authors, published = get_article_details(url)
+
+                    # Tweet it!
+                    tweet = format_tweet(title=title, authors=authors, url=url,
+                        published=published)
+                    print(u"Updating status: {}".format(tweet))
+
+                    try:
+                        r = twitter.update_status(tweet)
                 
-                except tweepy.TweepError:
-                    logging.exception("Failed to send tweet:")
-                    created_at = -1
+                    except tweepy.TweepError:
+                        logging.exception("Failed to send tweet:")
+                        created_at = -1
+
+                    else:
+                        created_at = r.created_at
+
+                    cursor.execute(
+                        """ INSERT INTO articles 
+                                (url, title, authors, published, tweeted) 
+                            VALUES (?, ?, ?, ?, ?);""",
+                        (url, title, authors, published, created_at))
+                    cursor.close()
+
+                    connection.commit()
+                    connection.close()
+
+                except:
+                    logger.exception("Something went wrong on URL {}".format(url))
+                    continue
 
                 else:
-                    created_at = r.created_at
-
-                cursor.execute(
-                    """ INSERT INTO articles 
-                            (url, title, authors, published, tweeted) 
-                        VALUES (?, ?, ?, ?, ?);""",
-                    (url, title, authors, published, created_at))
-                cursor.close()
-
-                connection.commit()
-                connection.close()
-
-                return True
+                    return True
 
     return False
 
