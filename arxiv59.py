@@ -98,6 +98,8 @@ def get_article_details(arxiv_url):
     feed = xmltodict.parse(r.text)["feed"]
     title = feed["entry"]["title"].replace("\n", "")
     N_authors = len(feed["entry"]["author"])
+    print("N_authors", N_authors, feed["entry"]["author"])
+    
     if N_authors > 1:
         first_author = feed["entry"]["author"][0]["name"]
         if N_authors == 2:
@@ -148,47 +150,40 @@ def perform_search():
 
             print("Checking for URL {}".format(url))
 
-            # Is this in the database? If not, tweet it, then come back tomorrow to
-            # check for a new entry.
+            # Is this in the database?
             result = cursor.execute("SELECT * FROM articles WHERE url = ?", 
                 (url, )).fetchone()
 
             if result is None:
+                # Fetch the article.
+                title, authors, published = get_article_details(url)
+
+                # Tweet it!
+                tweet = format_tweet(title=title, authors=authors, url=url,
+                    published=published)
+                print(u"Updating status: {}".format(tweet))
+
                 try:
-                    # Fetch the article.
-                    title, authors, published = get_article_details(url)
-
-                    # Tweet it!
-                    tweet = format_tweet(title=title, authors=authors, url=url,
-                        published=published)
-                    print(u"Updating status: {}".format(tweet))
-
-                    try:
-                        r = twitter.update_status(tweet)
-                
-                    except tweepy.TweepError:
-                        logging.exception("Failed to send tweet:")
-                        created_at = -1
-
-                    else:
-                        created_at = r.created_at
-
-                    cursor.execute(
-                        """ INSERT INTO articles 
-                                (url, title, authors, published, tweeted) 
-                            VALUES (?, ?, ?, ?, ?);""",
-                        (url, title, authors, published, created_at))
-                    cursor.close()
-
-                    connection.commit()
-                    connection.close()
-
-                except:
-                    logger.exception("Something went wrong on URL {}".format(url))
-                    continue
+                    r = twitter.update_status(tweet)
+            
+                except tweepy.TweepError:
+                    logging.exception("Failed to send tweet:")
+                    created_at = -1
 
                 else:
-                    return True
+                    created_at = r.created_at
+
+                cursor.execute(
+                    """ INSERT INTO articles 
+                            (url, title, authors, published, tweeted) 
+                        VALUES (?, ?, ?, ?, ?);""",
+                    (url, title, authors, published, created_at))
+                cursor.close()
+
+                connection.commit()
+                connection.close()
+
+                return True
 
     return False
 
