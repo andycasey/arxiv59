@@ -16,9 +16,16 @@ QUERIES = [
 DATABASE = "arxiv59.db"
 TWEET = u"{title}, by {authors} ({published}) {url}"
 
-# Load necessary credentials.
-with open("credentials.yaml", "r") as fp:
-    secrets = yaml.load(fp)
+# Load necessary credentials, either from a file or environment.
+secret_keys = (
+    "TWITTER_CONSUMER_KEY", "TWITTER_CONSUMER_SECRET",
+    "TWITTER_ACCESS_TOKEN", "TWITTER_ACCESS_SECRET")
+secrets = dict(zip(keys, [os.getenv(k) for k in secret_keys]))
+
+credentials_path = "credentials.yaml"
+if os.path.exists(credentials_path):
+    with open(credentials_path, "r") as fp:
+        secrets.update(yaml.load(fp))
 
 
 def initialize(force=False):
