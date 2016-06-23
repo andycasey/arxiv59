@@ -20,6 +20,7 @@ TWEET = "{title}, by {authors} ({published}) {url}"
 with open("credentials.yaml", "r") as fp:
     secrets = yaml.load(fp)
 
+
 def initialize(force=False):
     """
     Initialize the databse if it does not exist already.
@@ -46,6 +47,11 @@ def initialize(force=False):
 
 
 def format_tweet(**kwargs):
+    """
+    Format a Tweet using the `TWEET` template, but limit the title such that the
+    total length of the Tweet is 140 characters or less.
+    """
+
     kwds = {}
     kwds.update(kwargs)
 
@@ -104,6 +110,10 @@ def get_article_details(arxiv_url):
 
 
 def perform_search():
+    """
+    Search for a new arXiv59 winner. If one is found, tweet them then relax in
+    happiness.
+    """
 
     connection = sql.connect(DATABASE)
     cursor = connection.cursor()
