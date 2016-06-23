@@ -3,6 +3,7 @@ import logging
 import os
 import requests
 import sqlite3 as sql
+import time
 import tweepy
 import xmltodict
 import yaml
@@ -26,12 +27,6 @@ credentials_path = "credentials.yaml"
 if os.path.exists(credentials_path):
     with open(credentials_path, "r") as fp:
         secrets.update(yaml.load(fp))
-
-else:
-    # We are on Heroku. Only dispatch tweets when I allow.
-    import sys
-    print(sys.argv)
-    raise a
 
 def initialize(force=False):
     """
@@ -99,7 +94,7 @@ def get_article_details(arxiv_url):
     title = feed["entry"]["title"].replace("\n", "")
     N_authors = len(feed["entry"]["author"])
     print("N_authors", N_authors, feed["entry"]["author"])
-    
+
     if N_authors > 1:
         first_author = feed["entry"]["author"][0]["name"]
         if N_authors == 2:
@@ -188,9 +183,44 @@ def perform_search():
     return False
 
 
+def should_we_tweet(quiet_since=60*60*24):
+    """
+    Check how many seconds since we last tweeted, and ensure it is more than
+    quiet_since.
+
+    :param quiet_since:
+        Number of seconds we want to pass in between Tweets. Not always obeyed.
+
+    :returns:
+        A bool as to whether we should tweet or not.
+    """
+
+    connection = sql.connect(DATABASE)
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT tweeted FROM articles ORDER BY tweeted DESC LIMIT 1")
+
+    last_tweeted = cursor.fetchone()
+    if last_tweeted is None or last_tweeted[0] == -1:
+        return True
+
+    prev = time.mktime(time.strptime(last_tweeted[0], "%Y-%m-%d %H:%M:%S"))
+    diff = time.time() - prev
+
+    should_we_tweet = diff > quiet_since
+    
+    cursor.close()
+    connection.commit()
+    connection.close()
+
+    return should_we_tweet
+
 
 if __name__ == "__main__":
 
-
     initialize()
-    perform_search()
+    if should_we_tweet():
+        perform_search()
+
+    else:
+        print("Not tweeting.")
