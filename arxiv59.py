@@ -27,6 +27,11 @@ if os.path.exists(credentials_path):
     with open(credentials_path, "r") as fp:
         secrets.update(yaml.load(fp))
 
+else:
+    # We are on Heroku. Only dispatch tweets when I allow.
+    import sys
+    print(sys.argv)
+    raise a
 
 def initialize(force=False):
     """
