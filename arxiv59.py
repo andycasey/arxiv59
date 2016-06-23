@@ -121,7 +121,7 @@ def perform_search():
     auth = tweepy.OAuthHandler(
         secrets["TWITTER_CONSUMER_KEY"], secrets["TWITTER_CONSUMER_SECRET"])
     auth.set_access_token(
-        secrets["TWITTER_ACCESS_TOKEN"], secrets["TWITTER_ACCESS_SECRET")
+        secrets["TWITTER_ACCESS_TOKEN"], secrets["TWITTER_ACCESS_SECRET"])
 
     twitter = tweepy.API(auth)
 
