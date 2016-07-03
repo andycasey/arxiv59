@@ -82,8 +82,8 @@ def get_article_details(arxiv_url, published_or_updated=None):
         published time, and whether the article is valid (e.g., tweet it?).
     """
 
-    if not arxiv_url.startswith("http://arxiv.org/") \
-    or not arxiv_url.startswith("https://arxiv.org/"):
+    if  not arxiv_url.startswith("http://arxiv.org/") \
+    and not arxiv_url.startswith("https://arxiv.org/"):
         logging.info("Invalid URL: {}".format(arxiv_url))
         return (None, None, None, False)
 
