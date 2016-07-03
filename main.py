@@ -54,8 +54,7 @@ def index():
 
     if  os.environ.get("SECRET", None) is not None \
     and request.args.get("SECRET", None) == os.environ.get("SECRET", None):
-        print("SECRET MATCH {} {}".format(request.args.get("SECRET", None), os.environ.get("SECRET", None)))
-        arxiv59.tweet_article()
+        arxiv59.tweet_article(get_database())
 
     # Everything is going to be 200 OK.
-    return ("OK", 200)
+    return ("<code>OK</code>", 200)
