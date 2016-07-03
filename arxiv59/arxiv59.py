@@ -82,11 +82,17 @@ def get_article_details(arxiv_url, published_or_updated=None):
         published time, and whether the article is valid (e.g., tweet it?).
     """
 
+    if not arxiv_url.startswith("http://arxiv.org/") \
+    or not arxiv_url.startswith("https://arxiv.org/"):
+        logging.info("Invalid URL: {}".format(arxiv_url))
+        return (None, None, None, False)
+
+
     is_valid = True # unless otherwise found.
 
-    identifier = arxiv_url.split("/")[-1].split("v")[0]
-    if "." not in identifier:
-        identifier = "astro-ph/{}".format(identifier)
+    number = arxiv_url.split("/")[-1].split("v")[0]
+    context = arxiv_url.split("/")[-2]
+    identifier = "/".join([context, number])
 
     r = requests.get(
         "http://export.arxiv.org/api/query?search_query={}".format(identifier))
@@ -114,6 +120,7 @@ def get_article_details(arxiv_url, published_or_updated=None):
     
     authors = " ".join([first_author, suffix])
 
+    raise a
     if published_or_updated is not None:
 
         is_valid_updated = False
