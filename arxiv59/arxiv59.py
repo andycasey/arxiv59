@@ -30,13 +30,14 @@ DEFAULT_TWEET = u"{truncated_title}, by {authors} ({published}) {url}"
 posted = datetime.date.fromordinal(datetime.date.today().toordinal() - 1)
 
 TODAY_QUERY = posted.strftime("\"[v1] %a, %-d %b %Y 20:59:59\" site:arxiv.org")
+TODAY_MUST_BE_PUBLISHED = lambda t: t == posted.strftime("%Y-%m-%dT20:59:59Z")
 TODAY_TWEET = " ".join([u"[NEW TODAY]", DEFAULT_TWEET])
 
 QUERIES = [
-    (TODAY_QUERY, TODAY_TWEET),
-    ("20:59:59 site:arxiv.org", DEFAULT_TWEET),
-    ("20:59:58 site:arxiv.org", DEFAULT_TWEET),
-    ("20:59:57 site:arxiv.org", DEFAULT_TWEET)
+    (TODAY_QUERY, TODAY_MUST_BE_PUBLISHED, TODAY_TWEET),
+    ("20:59:59 site:arxiv.org", lambda t: t.endswith("T20:59:59Z"), DEFAULT_TWEET),
+    ("20:59:58 site:arxiv.org", lambda t: t.endswith("T20:59:58Z"), DEFAULT_TWEET),
+    ("20:59:57 site:arxiv.org", lambda t: t.endswith("T20:59:57Z"), DEFAULT_TWEET)
 ]
 
 
@@ -64,17 +65,24 @@ def format_tweet(template, **kwargs):
     return tweet
 
 
-def get_article_details(arxiv_url):
+def get_article_details(arxiv_url, published_or_updated=None):
     """
     Fetch an article using the arXiv API.
 
     :param arxiv_url:
         The URL of the paper.
 
+    :param published_or_updated: [optional]
+        A function that must return True for either the published or updated
+        entry of the arXiv article for it to be considered valid.
+        Helps avoid Google's "did you mean?" results.
+
     :returns:
-        A three-length tuple containing the article title, the authors, and
-        the published time.
+        A four-length tuple containing the article title, the authors, the
+        published time, and whether the article is valid (e.g., tweet it?).
     """
+
+    is_valid = True # unless otherwise found.
 
     identifier = arxiv_url.split("/")[-1].split("v")[0]
     if "." not in identifier:
@@ -105,7 +113,18 @@ def get_article_details(arxiv_url):
     
     authors = " ".join([first_author, suffix])
 
-    return (title, authors, published)
+    if published_or_updated is not None:
+
+        is_valid_updated = False
+        is_valid_published = published_or_updated(feed["entry"]["published"])
+        if "updated" in feed["entry"] and not is_valid_published:
+            is_valid_updated = published_or_updated(feed["entry"]["updated"])
+
+        is_valid = is_valid_published or is_valid_updated
+        logging.debug("Validity for {} ({}): {} / {}".format(arxiv_url,
+            "updated" in feed["entry"], is_valid_published, is_valid_updated))
+
+    return (title, authors, published, is_valid)
 
 
 def tweet_article(database):
@@ -117,7 +136,6 @@ def tweet_article(database):
     """
 
     # Authenticate with Twitter.
-    print("DOing stuff")
     logging.info("Authenticating with Twitter..")
     auth = tweepy.OAuthHandler(
         os.environ["TWITTER_CONSUMER_KEY"],
@@ -131,7 +149,7 @@ def tweet_article(database):
 
     cursor = database.cursor()
 
-    for i, (query, tweet_template) in enumerate(QUERIES):
+    for i, (query, arxiv_page_contains, tweet_template) in enumerate(QUERIES):
 
         logging.info("Querying: {}".format(query))
 
@@ -151,7 +169,11 @@ def tweet_article(database):
                 continue
 
             # Fetch the (new) article.
-            title, authors, published = get_article_details(url)
+            title, authors, published, is_valid = get_article_details(url,
+                must_contain=arxiv_page_contains)
+            if not is_valid:
+                logging.info("This article is not valid! Moving on..")
+                continue
 
             # Tweet it!
             status = format_tweet(tweet_template, title=title, authors=authors,
