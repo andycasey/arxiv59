@@ -93,7 +93,8 @@ def get_article_details(arxiv_url, published_or_updated=None):
 
     feed = xmltodict.parse(r.text)["feed"]
     title = feed["entry"]["title"].replace("\n", "")
-    N_authors = len(feed["entry"]["author"])
+    N_authors = 1   if isinstance(feed["entry"]["author"], dict) \
+                    else len(feed["entry"]["author"])
     
     if N_authors > 1:
         first_author = feed["entry"]["author"][0]["name"]
@@ -171,7 +172,7 @@ def tweet_article(database):
             # Fetch the (new) article.
             title, authors, published, is_valid = get_article_details(url,
                 published_or_updated=published_or_updated)
-            
+
             if not is_valid:
                 logging.info("This article is not valid! Moving on..")
 
