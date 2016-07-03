@@ -1,3 +1,2 @@
-arxiv59.db
 *.pyc
-credentials.yaml
+set_credentials.sh
