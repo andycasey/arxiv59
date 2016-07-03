@@ -152,8 +152,8 @@ def tweet_article(database):
         os.environ["TWITTER_ACCESS_TOKEN"],
         os.environ["TWITTER_ACCESS_SECRET"]
     )
-    twitter = tweepy.API(auth)
-
+    twitter, twitter_failures = (tweepy.API(auth), 0)
+    
     cursor = database.cursor()
 
     for i, (query, published_or_updated, tweet_template) in enumerate(QUERIES):
@@ -196,12 +196,18 @@ def tweet_article(database):
 
             logging.info(u"Updating status: {}".format(status))
 
-            '''
             try:
                 r = twitter.update_status(status)
         
             except tweepy.TweepError:
                 logging.exception("Failed to send tweet:")
+                twitter_failures += 1
+
+                if twitter_failures >= 3:
+                    logging.warn("Is something wrong with Twitter?")
+                    cursor.close()
+                    return False
+
                 continue
 
             else:
@@ -210,9 +216,8 @@ def tweet_article(database):
             cursor.execute(
                 """ INSERT INTO articles 
                         (url, title, authors, published, tweeted) 
-                    VALUES (?, ?, ?, ?, ?);""",
+                    VALUES (%s, %s, %s, %s, %s);""",
                 (url, title, authors, published, created_at))
-            '''
 
             cursor.close()
             database.commit()
