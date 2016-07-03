@@ -120,7 +120,6 @@ def get_article_details(arxiv_url, published_or_updated=None):
     
     authors = " ".join([first_author, suffix])
 
-    raise a
     if published_or_updated is not None:
 
         is_valid_updated = False
