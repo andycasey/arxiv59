@@ -56,5 +56,4 @@ def index():
     and request.args.get("SECRET", None) == os.environ.get("SECRET", None):
         arxiv59.tweet_article(get_database())
 
-    # Everything is going to be 200 OK.
-    return ("<code>OK</code>", 200)
+    return ("<code>Everything is going to be 200 OK.</code>", 200)

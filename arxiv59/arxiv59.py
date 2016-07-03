@@ -86,8 +86,7 @@ def get_article_details(arxiv_url):
     feed = xmltodict.parse(r.text)["feed"]
     title = feed["entry"]["title"].replace("\n", "")
     N_authors = len(feed["entry"]["author"])
-    print("N_authors", N_authors, feed["entry"]["author"])
-
+    
     if N_authors > 1:
         first_author = feed["entry"]["author"][0]["name"]
         if N_authors == 2:
@@ -104,7 +103,6 @@ def get_article_details(arxiv_url):
         published = "{} on update!".format(
             feed["entry"]["updated"].split("T")[1].rstrip("Z"))
     
-
     authors = " ".join([first_author, suffix])
 
     return (title, authors, published)
@@ -147,10 +145,8 @@ def tweet_article(database):
 
             # Is this in the database?
             result = cursor.execute(
-                "SELECT * FROM articles WHERE url = ?", (url, )).fetchone()
-
-            if result is not None:
-                continue
+                "SELECT * FROM articles WHERE url = %s", (url, ))
+            if result.rowcount: continue # to the next article
 
             # Fetch the article.
             title, authors, published = get_article_details(url)
