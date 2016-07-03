@@ -52,8 +52,9 @@ def close_connection(exception):
 def index():
     """ If we get sent the secret password, then tweet! """
 
-    if  os.environ["SECRET"] is not None \
-    and request.args.get("SECRET", None) == os.environ["SECRET"]:
+    if  os.environ.get("SECRET", None) is not None \
+    and request.args.get("SECRET", None) == os.environ.get("SECRET", None):
+        print("SECRET MATCH {} {}".format(request.args.get("SECRET", None), os.environ.get("SECRET", None)))
         arxiv59.tweet_article()
 
     # Everything is going to be 200 OK.

@@ -119,6 +119,7 @@ def tweet_article(database):
     """
 
     # Authenticate with Twitter.
+    print("DOing stuff")
     logging.info("Authenticating with Twitter..")
     auth = tweepy.OAuthHandler(
         os.environ["TWITTER_CONSUMER_KEY"],
