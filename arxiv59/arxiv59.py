@@ -92,7 +92,7 @@ def get_article_details(arxiv_url, published_or_updated=None):
 
     number = arxiv_url.split("/")[-1].split("v")[0]
     context = arxiv_url.split("/")[-2]
-    identifier = "/".join([context, number])
+    identifier = number if context == "abs" else "/".join([context, number])
 
     r = requests.get(
         "http://export.arxiv.org/api/query?search_query={}".format(identifier))
