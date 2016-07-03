@@ -9,16 +9,11 @@ from __future__ import (division, print_function, absolute_import,
 import datetime
 import logging
 import os
-import sqlite3 as sql
-import sys
-import time
-from collections import OrderedDict
 
 import google
 import requests
 import tweepy
 import xmltodict
-import yaml
 
 __all__ = ["tweet_article", "format_tweet", "get_article_details"]
 
