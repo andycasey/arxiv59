@@ -153,7 +153,7 @@ def tweet_article(database):
 
         logging.info("Querying: {}".format(query))
 
-        for url in google.search(query):
+        for j, url in enumerate(google.search(query)):
             
             # Clean up the url to remove 'v2' at the end.
             url = url[:-2] if url[-2] == "v" else url
@@ -171,8 +171,16 @@ def tweet_article(database):
             # Fetch the (new) article.
             title, authors, published, is_valid = get_article_details(url,
                 published_or_updated=published_or_updated)
+            
             if not is_valid:
                 logging.info("This article is not valid! Moving on..")
+
+                # Special exception for if it is the first query, because
+                # Google is probably giving us 'Did you mean?' results..
+                if i == 0 and j == 0:
+                    logging.info("Special break because Google hates us.")
+                    break
+
                 continue
 
             # Tweet it!
