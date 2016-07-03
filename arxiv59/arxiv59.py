@@ -149,7 +149,7 @@ def tweet_article(database):
 
     cursor = database.cursor()
 
-    for i, (query, arxiv_page_contains, tweet_template) in enumerate(QUERIES):
+    for i, (query, published_or_updated, tweet_template) in enumerate(QUERIES):
 
         logging.info("Querying: {}".format(query))
 
@@ -170,7 +170,7 @@ def tweet_article(database):
 
             # Fetch the (new) article.
             title, authors, published, is_valid = get_article_details(url,
-                must_contain=arxiv_page_contains)
+                published_or_updated=published_or_updated)
             if not is_valid:
                 logging.info("This article is not valid! Moving on..")
                 continue
