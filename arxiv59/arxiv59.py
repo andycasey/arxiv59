@@ -144,9 +144,9 @@ def tweet_article(database):
             logging.info("Checking for URL {}".format(url))
 
             # Is this in the database?
-            result = cursor.execute(
+            cursor.execute(
                 "SELECT * FROM articles WHERE url = %s", (url, ))
-            if result.rowcount: continue # to the next article
+            if cursor.rowcount: continue # to the next article
 
             # Fetch the article.
             title, authors, published = get_article_details(url)
