@@ -146,9 +146,11 @@ def tweet_article(database):
             # Is this in the database?
             cursor.execute(
                 "SELECT * FROM articles WHERE url = %s", (url, ))
-            if cursor.rowcount: continue # to the next article
+            if cursor.rowcount:
+                logging.info("Already tweeted that article. Moving on..")
+                continue
 
-            # Fetch the article.
+            # Fetch the (new) article.
             title, authors, published = get_article_details(url)
 
             # Tweet it!
