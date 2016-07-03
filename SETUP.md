@@ -1,3 +1,6 @@
+Setup Guide
+===========
+
 0.  Login to heroku:
 
     `heroku login`
@@ -25,7 +28,7 @@
 5.  Create a `SECRET` environment variable on Heroku, which we will send with our cron job to trigger a new tweet.
   
     ````
-    heroku config:set SECRET="you shall not pass"
+    heroku config:set SECRET=gandalf
     ````
 
 6. Set up a Heroku Postgres addon, and initialise the database with our schema.
@@ -44,5 +47,14 @@
     git push heroku master
     ````
 
-8. Create a cron job to ping the Heroku app with the right `SECRET` on weekdays.
+8. Create a cron job on a different computer to ping the Heroku app with the right `SECRET` on weekdays.
 
+    ````
+    crontab -e
+    ```
+
+    Then enter:
+
+    ````
+    0 11 * * 1,2,3,4,5 curl https://arxiv59.herokuapp.com?SECRET=gandalf >/dev/null 2>&1
+    ````
