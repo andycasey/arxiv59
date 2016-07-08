@@ -97,7 +97,7 @@ def get_article_details(arxiv_url, published_or_updated=None):
         N_authors = 1   if isinstance(feed["entry"]["author"], dict) \
                         else len(feed["entry"]["author"])
     except:
-        logging.info("Invalid URL: {}".format(arxiv_urL))
+        logging.info("Invalid URL: {}".format(arxiv_url))
         return (None, None, None, False)    
 
 
