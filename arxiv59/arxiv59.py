@@ -91,12 +91,16 @@ def get_article_details(arxiv_url, published_or_updated=None):
 
     r = requests.get(
         "http://export.arxiv.org/api/query?search_query={}".format(identifier))
+    try:
+        feed = xmltodict.parse(r.text)["feed"]
+        title = feed["entry"]["title"].replace("\n", "")
+        N_authors = 1   if isinstance(feed["entry"]["author"], dict) \
+                        else len(feed["entry"]["author"])
+    except:
+        logging.info("Invalid URL: {}".format(arxiv_urL))
+        return (None, None, None, False)    
 
-    feed = xmltodict.parse(r.text)["feed"]
-    title = feed["entry"]["title"].replace("\n", "")
-    N_authors = 1   if isinstance(feed["entry"]["author"], dict) \
-                    else len(feed["entry"]["author"])
-    
+
     if N_authors > 1:
         first_author = feed["entry"]["author"][0]["name"]
         if N_authors == 2:
