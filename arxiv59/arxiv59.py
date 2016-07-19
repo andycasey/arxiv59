@@ -24,8 +24,8 @@ DEFAULT_TWEET = u"{truncated_title}, by {authors} ({published}) {url}"
 # Note that 'today' means posted today but the arXiv date will be yesterday.
 posted = datetime.date.fromordinal(datetime.date.today().toordinal() - 1)
 
-TODAY_QUERY = posted.strftime("\"[v1] %a, %-d %b %Y 20:59:59\" site:arxiv.org")
-TODAY_MUST_BE_PUBLISHED = lambda t: t == posted.strftime("%Y-%m-%dT20:59:59Z")
+TODAY_QUERY = posted.strftime("\"[v1] %a, %-d %b %Y 20:59:5\" site:arxiv.org")
+TODAY_MUST_BE_PUBLISHED = lambda t: t == posted.strftime("%Y-%m-%dT20:59:5")
 TODAY_TWEET = " ".join([u"[NEW TODAY]", DEFAULT_TWEET])
 
 QUERIES = [
