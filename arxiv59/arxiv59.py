@@ -30,7 +30,7 @@ TODAY_TWEET = " ".join([u"[NEW TODAY]", DEFAULT_TWEET])
 
 QUERIES = [
     (TODAY_QUERY, TODAY_MUST_BE_PUBLISHED, TODAY_TWEET),
-    ("20:59:59 site:arxiv.org", lambda t: t.endswith("T20:59:59Z"), DEFAULT_TWEET),
+#    ("20:59:59 site:arxiv.org", lambda t: t.endswith("T20:59:59Z"), DEFAULT_TWEET),
     ("20:59:58 site:arxiv.org", lambda t: t.endswith("T20:59:58Z"), DEFAULT_TWEET),
     ("20:59:57 site:arxiv.org", lambda t: t.endswith("T20:59:57Z"), DEFAULT_TWEET)
 ]
